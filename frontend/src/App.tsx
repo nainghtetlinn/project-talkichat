@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Box, Container } from "@mui/material";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Home, Signup, Login, Chat, NotFound } from "./pages";
+import { Header, Toast } from "./components";
+
+import { useEffect } from "react";
+import { useUserContext } from "./contexts/user";
+import { loginWithToken } from "./services/user";
+
+const token = localStorage.getItem("token");
 
 function App() {
-  const [count, setCount] = useState(0)
+  const navigate = useNavigate();
+  const { username, putUser, _id } = useUserContext();
+
+  useEffect(() => {
+    const a = async () => {
+      if (token) {
+        try {
+          const data = await loginWithToken(token);
+          putUser(data);
+        } catch (error: any) {
+          localStorage.removeItem("token");
+        }
+      }
+    };
+    a();
+  }, []);
+
+  useEffect(() => {
+    if (!username) {
+      navigate("/");
+    }
+  }, [username]);
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+    <Box
+      sx={{
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Toast />
+      <Header />
+      <Container
+        maxWidth="lg"
+        sx={{
+          height: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <Routes>
+          <Route
+            path="/"
+            element={!!username ? <Navigate to="/chat" /> : <Home />}
+          />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:chatId" element={<Chat />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Container>
+    </Box>
+  );
 }
 
-export default App
+export default App;
