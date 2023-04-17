@@ -13,23 +13,17 @@ import { socket } from "../../services/socket";
 export const Chat = () => {
   const { chatId } = useParams();
   const queryClient = useQueryClient();
-  const { _id } = useUserContext();
+  const { _id, username } = useUserContext();
   const [openCreate, setOpenCreate] = useState(false);
 
   useEffect(() => {
-    if (!_id) return;
-    socket.emit("setup", { _id });
-    socket.on("connected", () => {
-      console.log("Connected");
-    });
-    socket.on("created-group", (chatData) => {
+    socket.emit("setup", _id);
+    socket.on("message-received", (msg) => {
+      queryClient.invalidateQueries(["messages", msg.chat._id]);
       queryClient.invalidateQueries("chats-list");
-      console.log(chatData);
     });
-    socket.on("received-message", (messageData) => {
+    socket.on("group-created", (group) => {
       queryClient.invalidateQueries("chats-list");
-      queryClient.invalidateQueries(["messages", chatId]);
-      console.log(messageData);
     });
   }, []);
 

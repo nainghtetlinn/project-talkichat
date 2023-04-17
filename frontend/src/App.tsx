@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Home, Signup, Login, Chat, NotFound } from "./pages";
 import { Header, Toast } from "./components";
 
-import { useEffect } from "react";
+import { useLayoutEffect, useEffect } from "react";
 import { useUserContext } from "./contexts/user";
 import { loginWithToken } from "./services/user";
 
@@ -13,7 +13,7 @@ function App() {
   const navigate = useNavigate();
   const { username, putUser, _id } = useUserContext();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const a = async () => {
       if (token) {
         try {
@@ -56,8 +56,8 @@ function App() {
             path="/"
             element={!!username ? <Navigate to="/chat" /> : <Home />}
           />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/chat/:chatId" element={<Chat />} />
+          <Route path="/chat" element={username && <Chat />} />
+          <Route path="/chat/:chatId" element={username && <Chat />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<NotFound />} />

@@ -40,15 +40,17 @@ connectDB(() => {
 
   io.on("connection", (socket) => {
     console.log(`Connected to socket`);
-    socket.on("setup", (userData) => {
-      socket.join(userData._id);
-      socket.emit("connected");
+    socket.on("setup", (id) => {
+      socket.join(id);
     });
-
-    socket.on("send-message", (messageData) => {
-      const users = messageData.chat.users;
-      users.forEach((user) => {
-        socket.to(user).emit("received-message", messageData);
+    socket.on("send-message", (message) => {
+      message.chat.users.forEach((user) => {
+        socket.to(user).emit("message-received", message);
+      });
+    });
+    socket.on("create-group", (group) => {
+      group.users.forEach((user) => {
+        socket.to(user._id).emit("group-created", group);
       });
     });
   });

@@ -35,7 +35,6 @@ export const ChatItem = ({ chatItem }: Props) => {
       key={_id}
       onClick={() => {
         navigate(`/chat/${_id}`);
-        socket.emit("join-chat", _id);
       }}
     >
       {isGroupChat ? (

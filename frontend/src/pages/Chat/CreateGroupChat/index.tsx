@@ -15,7 +15,7 @@ import { UsersList } from "./UsersList";
 import { SelectedUsersList } from "./SelectedUsersList";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useUserContext } from "../../../contexts/user";
 import { useToastContext } from "../../../contexts/toast";
 import { searchUser } from "../../../services/user";
@@ -25,6 +25,7 @@ import { socket } from "../../../services/socket";
 type Props = { open: boolean; onClose: () => void };
 
 export const CreateGroupChat = ({ open, onClose }: Props) => {
+  const queryClient = useQueryClient();
   const { token } = useUserContext();
   const { showToast } = useToastContext();
 
@@ -72,6 +73,7 @@ export const CreateGroupChat = ({ open, onClose }: Props) => {
       setName("");
       setSelectedUsers([]);
       showToast({ type: "success", msg: "Group chat created" });
+      queryClient.invalidateQueries("chats-list");
       socket.emit("create-group", data);
     },
     onError: (error: any) => {

@@ -2,7 +2,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Stack, TextField, IconButton } from "@mui/material";
 
 import { useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useToastContext } from "../../../contexts/toast";
 import { useUserContext } from "../../../contexts/user";
 import { sendMessage } from "../../../services/message";
@@ -11,6 +11,7 @@ import { socket } from "../../../services/socket";
 type Props = { chatId: string };
 
 export const ChatRoomAction = ({ chatId }: Props) => {
+  const queryClient = useQueryClient();
   const { showToast } = useToastContext();
   const { token } = useUserContext();
   const [content, setContent] = useState("");
@@ -20,6 +21,8 @@ export const ChatRoomAction = ({ chatId }: Props) => {
     onSuccess: (data) => {
       setContent("");
       socket.emit("send-message", data);
+      queryClient.invalidateQueries(["messages", chatId]);
+      queryClient.invalidateQueries("chats-list");
     },
     onError: (error: any) => {
       showToast({ type: "error", msg: error.message });
