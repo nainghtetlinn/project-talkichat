@@ -1,11 +1,11 @@
 import axios from "axios";
-import { UserType } from "../@types/user";
+import { LoggedUserType } from "../@types/user";
 
 const baseUrl = import.meta.env.PROD
   ? import.meta.env.VITE_PRODUCTION_SERVER
   : import.meta.env.VITE_DEVELOPMENT_SERVER;
 
-const user = axios.create({
+const User = axios.create({
   baseURL: baseUrl + "/api/user",
 });
 
@@ -13,22 +13,22 @@ const signup = async ({
   username,
   email,
   password,
-  avatarFile,
+  avatar,
 }: {
   username: string;
   email: string;
   password: string;
-  avatarFile: any;
+  avatar: any;
 }) => {
   const formdata = new FormData();
   formdata.append("email", email);
   formdata.append("password", password);
   formdata.append("username", username);
-  formdata.append("avatar", avatarFile);
-  const { data } = await user.post("/register", formdata, {
+  formdata.append("avatar", avatar);
+  const { data } = await User.post("/register", formdata, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return data as UserType;
+  return data as LoggedUserType;
 };
 
 const login = async ({
@@ -38,50 +38,36 @@ const login = async ({
   email: string;
   password: string;
 }) => {
-  const { data } = await user.post("/login", { email, password });
-  return data as UserType;
+  const { data } = await User.post("/login", { email, password });
+  return data as LoggedUserType;
 };
 
 const loginWithToken = async (token: string) => {
-  const { data } = await user.get("/token", {
+  const { data } = await User.get("/token", {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return data as UserType;
+  return data as LoggedUserType;
 };
 
-const changeUsername = async ({
+const updateUser = async ({
   username,
-  token,
-}: {
-  username: string;
-  token: string;
-}) => {
-  const { data } = await user.put(
-    "/change/username",
-    { username },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return data as UserType;
-};
-
-const changeAvatar = async ({
   avatarFile,
   token,
 }: {
+  username: string;
   avatarFile: any;
   token: string;
 }) => {
-  const { data } = await user.put(
-    "/change/avatar",
-    { avatar: avatarFile },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return data as UserType;
+  const formdata = new FormData();
+  formdata.append("username", username);
+  formdata.append("avatar", avatarFile);
+  const { data } = await User.put("/update", formdata, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data as LoggedUserType;
 };
 
 const searchUser = async ({
@@ -91,7 +77,7 @@ const searchUser = async ({
   search: string;
   token: string;
 }) => {
-  const { data } = await user.get("/", {
+  const { data } = await User.get("/", {
     params: { search },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -100,11 +86,4 @@ const searchUser = async ({
   return data;
 };
 
-export {
-  signup,
-  login,
-  loginWithToken,
-  changeUsername,
-  changeAvatar,
-  searchUser,
-};
+export { signup, login, loginWithToken, updateUser, searchUser };

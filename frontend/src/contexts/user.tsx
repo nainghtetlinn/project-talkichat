@@ -1,7 +1,8 @@
-import { createContext, useContext, useState } from "react";
-import { UserType, UserContextType } from "../@types/user";
+import { createContext, useContext, useState, useLayoutEffect } from "react";
+import { LoggedUserType, UserContextType } from "../@types/user";
+import { loginWithToken } from "../services/user";
 
-const DEFAULT_USER: UserType = {
+const DEFAULT_USER: LoggedUserType = {
   username: "",
   email: "",
   avatar: "",
@@ -15,10 +16,15 @@ const userContext = createContext<UserContextType>({
   removeUser: () => {},
 });
 
-const UserContextProvider = ({ children }: { children: JSX.Element }) => {
-  const [user, setUser] = useState<UserType>(DEFAULT_USER);
+const token = localStorage.getItem("token") || "";
 
-  function putUser({ username, email, avatar, _id, token }: UserType) {
+const UserContextProvider = ({ children }: { children: JSX.Element }) => {
+  const [user, setUser] = useState<LoggedUserType>({
+    ...DEFAULT_USER,
+    token: token,
+  });
+
+  function putUser({ username, email, avatar, _id, token }: LoggedUserType) {
     setUser({ username, email, avatar, _id, token });
     localStorage.setItem("token", token);
   }
@@ -26,6 +32,17 @@ const UserContextProvider = ({ children }: { children: JSX.Element }) => {
     setUser(DEFAULT_USER);
     localStorage.removeItem("token");
   }
+
+  useLayoutEffect(() => {
+    if (token) {
+      loginWithToken(token)
+        .then((data) => putUser(data))
+        .catch((err) => {
+          removeUser();
+        });
+    }
+  }, []);
+
   return (
     <userContext.Provider
       value={{

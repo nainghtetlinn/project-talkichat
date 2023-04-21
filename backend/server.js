@@ -43,15 +43,11 @@ connectDB(() => {
     socket.on("setup", (id) => {
       socket.join(id);
     });
-    socket.on("send-message", (message) => {
-      message.chat.users.forEach((user) => {
-        socket.to(user).emit("message-received", message);
-      });
+    socket.on("join-chat", (chatId) => {
+      socket.join(chatId);
     });
-    socket.on("create-group", (group) => {
-      group.users.forEach((user) => {
-        socket.to(user._id).emit("group-created", group);
-      });
+    socket.on("disconnect", () => {
+      console.log("Disconnected");
     });
   });
 });

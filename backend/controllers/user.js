@@ -1,10 +1,13 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/user");
+const Chat = require("../models/chat");
+const Message = require("../models/message");
 const { generateToken } = require("../utils/token");
 const {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  deleteObject,
 } = require("firebase/storage");
 const { storage } = require("../config/firebase");
 const { v4 } = require("uuid");
@@ -12,7 +15,7 @@ const { v4 } = require("uuid");
 /* /api/user/register POST {email, password, username, avatar?} */
 const register = asyncHandler(async (req, res) => {
   let url;
-  const { username, email, password } = req.body;
+  const { email, password, username } = req.body;
   const avatar = req.file;
   if (avatar) {
     const acceptTypes = ["image/jpeg", "image/jpg", "image/png"];
@@ -35,11 +38,31 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const user = await User.create({
-    username,
     email,
     password,
+    username,
     avatar: url || null,
   });
+
+  // auto access with my acc
+  let chatData = {
+    isGroupChat: false,
+    users: [user._id, "643e42e71dc97120cbb8df19"],
+  };
+  const chat = await Chat.create(chatData);
+
+  // auto message to newly created user with my acc
+  const message = await Message.create({
+    content: "Hello",
+    chat: chat._id,
+    sender: "643e42e71dc97120cbb8df19",
+  });
+
+  // change latest message
+  await Chat.findByIdAndUpdate(chat._id, {
+    latestMessage: message._id,
+  });
+
   res.status(201).json({
     _id: user._id,
     username: user.username,
@@ -96,25 +119,11 @@ const searchUser = asyncHandler(async (req, res) => {
   }
 });
 
-/* /api/user/change/username PUT {username} */
-const changeUsername = asyncHandler(async (req, res) => {
+/* /api/user/update PUT {avatar, username} */
+const updateUser = asyncHandler(async (req, res) => {
   const { username } = req.body;
   req.user.username = username;
-  const user = await req.user.save();
-
-  res.status(200).json({
-    _id: user._id,
-    username: user.username,
-    email: user.email,
-    avatar: user.avatar,
-    token: generateToken(user._id),
-  });
-});
-
-/* /api/user/change/avatar PUT {avatar} */
-const changeAvatar = asyncHandler(async (req, res) => {
-  const oldurl = req.user.avatar;
-
+  const oldUrl = req.user.avatar;
   let url;
   const avatar = req.file;
   if (avatar) {
@@ -135,8 +144,12 @@ const changeAvatar = asyncHandler(async (req, res) => {
       contentType: avatar.mimetype,
     });
     url = await getDownloadURL(snapshot.ref);
+    req.user.avatar = url;
+
+    // deleting old avatar from oldUrl
+    const storageRef = ref(storage, oldUrl);
+    await deleteObject(storageRef);
   }
-  req.user.avatar = url || null;
   const user = await req.user.save();
 
   res.status(200).json({
@@ -153,6 +166,5 @@ module.exports = {
   login,
   token,
   searchUser,
-  changeAvatar,
-  changeUsername,
+  updateUser,
 };

@@ -17,12 +17,21 @@ const sendMessage = asyncHandler(async (req, res) => {
     chat: isChat._id,
     sender: user._id,
   });
-  const result = await Message.findById(message._id)
-    .populate("sender", "-password")
-    .populate("chat");
-  await Chat.findByIdAndUpdate(isChat._id, {
-    unreadMessages: message._id,
+  const result = await Message.findById(message._id).populate(
+    "sender",
+    "username avatar isActive"
+  );
+
+  const chat = await Chat.findByIdAndUpdate(isChat._id, {
+    latestMessage: message._id,
   });
+
+  const io = require("../socket").getIO();
+  io.to(result.chat.toString()).emit("message-received", result);
+  chat.users.forEach((u) => {
+    io.to(u.toString()).emit("message-received-noti", result);
+  });
+
   res.status(201).json(result);
 });
 
@@ -38,7 +47,7 @@ const getAllMessages = asyncHandler(async (req, res) => {
   }
   const messages = await Message.find({ chat: chatId }).populate(
     "sender",
-    "username email avatar"
+    "username avatar isActive"
   );
 
   res.status(200).json(messages);

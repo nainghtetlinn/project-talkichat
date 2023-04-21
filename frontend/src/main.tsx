@@ -5,7 +5,8 @@ import { CssBaseline } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import { ToastContextProvider } from "./contexts/toast";
+import { SnackbarProvider } from "notistack";
+
 import { UserContextProvider } from "./contexts/user";
 
 const client = new QueryClient();
@@ -15,11 +16,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <BrowserRouter>
     <CssBaseline />
     <QueryClientProvider client={client}>
-      <ToastContextProvider>
-        <UserContextProvider>
+      <UserContextProvider>
+        <SnackbarProvider
+          maxSnack={1}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        >
           <App />
-        </UserContextProvider>
-      </ToastContextProvider>
+        </SnackbarProvider>
+      </UserContextProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>
   </BrowserRouter>

@@ -1,12 +1,12 @@
-export interface UserType {
+export interface LoggedUserType {
   username: string;
   email: string;
   avatar?: string;
-  token: string;
   _id: string;
+  token: string;
 }
 
-export interface UserContextType extends UserType {
-  putUser: (user: UserType) => void;
+export interface UserContextType extends LoggedUserType {
+  putUser: (user: LoggedUserType) => void;
   removeUser: () => void;
 }

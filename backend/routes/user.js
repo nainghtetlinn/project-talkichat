@@ -12,8 +12,7 @@ const {
   login,
   token,
   searchUser,
-  changeAvatar,
-  changeUsername,
+  updateUser,
 } = require("../controllers/user");
 //////////
 const router = express.Router();
@@ -32,14 +31,9 @@ router.route("/token").get(protect, token);
 /* /api/user?search=username GET */
 router.route("/").get(protect, searchUser);
 
-/* /api/user/change/username PUT {username} */
+/* /api/user/update PUT {avatar, username} */
 router
-  .route("/change/username")
-  .put(protect, changeUsernameValidator, changeUsername);
-
-/* /api/user/change/avatar PUT {avatar} */
-router
-  .route("/change/avatar")
-  .put(protect, multer().single("avatar"), changeAvatar);
+  .route("/update")
+  .put(protect, multer().single("avatar"), changeUsernameValidator, updateUser);
 
 module.exports = router;

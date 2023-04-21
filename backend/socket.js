@@ -19,5 +19,7 @@ module.exports = {
     });
     return io;
   },
-  getIO: () => io,
+  getIO: () => {
+    return io;
+  },
 };

@@ -12,7 +12,7 @@ const accessChat = asyncHandler(async (req, res) => {
   })
     .populate("users", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "-password" },
     });
   if (!isChat) {
@@ -25,6 +25,10 @@ const accessChat = asyncHandler(async (req, res) => {
       "users",
       "-password"
     );
+
+    const io = require("../socket").getIO();
+    io.to(userId).emit("new-chat", fullChat);
+
     res.status(201).json(fullChat);
   } else {
     res.status(200).json(isChat);
@@ -40,7 +44,7 @@ const getChat = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "-password" },
     })
     .sort({ updatedAt: -1 });
@@ -58,7 +62,7 @@ const fetchChats = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "-password" },
     })
     .sort({ updatedAt: -1 });
@@ -84,6 +88,12 @@ const createGroupChat = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password");
 
+  const io = require("../socket").getIO();
+  populatedGroupChat.users.forEach((u) => {
+    if (u._id.toString() === user._id.toString()) return;
+    io.to(u._id.toString()).emit("group-created", populatedGroupChat);
+  });
+
   res.status(201).json(populatedGroupChat);
 });
 
@@ -99,7 +109,7 @@ const renameGroupChat = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "-password" },
     });
 
@@ -127,7 +137,7 @@ const addMember = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "-password" },
     });
 
@@ -154,7 +164,7 @@ const removeMember = asyncHandler(async (req, res) => {
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate({
-      path: "unreadMessages",
+      path: "latestMessage",
       populate: { path: "sender", select: "username avatar" },
     });
 

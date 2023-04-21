@@ -11,105 +11,41 @@ export const validateLogin = ({
     email: Joi.string()
       .email({ tlds: { allow: false } })
       .required()
-      .error((errors: any) => {
-        errors.forEach((err: Joi.ErrorReport) => {
-          switch (err.code) {
-            case "string.email":
-              err.message = `${err.path} should be a valid email`;
-              break;
-            case "string.empty":
-              err.message = `${err.path} required!`;
-              break;
-            default:
-              break;
-          }
-        });
-        return errors;
+      .messages({
+        "string.email": "Email must be valid email",
+        "string.empty": "Email require",
       }),
-    password: Joi.string()
-      .min(6)
-      .required()
-      .error((errors: any) => {
-        errors.forEach((err: Joi.ErrorReport) => {
-          switch (err.code) {
-            case "string.min":
-              err.message = `${err.path} should have at least ${err.local.limit} characters!`;
-              break;
-            case "string.empty":
-              err.message = `${err.path} required!`;
-              break;
-            default:
-              break;
-          }
-        });
-        return errors;
-      }),
+    password: Joi.string().min(6).required().messages({
+      "string.min": "Password must have at least 6 characters",
+      "string.empty": "Password require",
+    }),
   }).validate({ email, password });
 };
 
 export const validateSignup = ({
+  username,
   email,
   password,
-  username,
 }: {
+  username: string;
   email: string;
   password: string;
-  username: string;
 }) => {
   return Joi.object({
+    username: Joi.string().min(5).required().messages({
+      "string.empty": "Username require",
+      "string.min": "Username must have at least 5 characters",
+    }),
     email: Joi.string()
       .email({ tlds: { allow: false } })
       .required()
-      .error((errors: any) => {
-        errors.forEach((err: Joi.ErrorReport) => {
-          switch (err.code) {
-            case "string.email":
-              err.message = `${err.path} should be a valid email`;
-              break;
-            case "string.empty":
-              err.message = `${err.path} required!`;
-              break;
-            default:
-              break;
-          }
-        });
-        return errors;
+      .messages({
+        "string.email": "Email must be valid email",
+        "string.empty": "Email require",
       }),
-    password: Joi.string()
-      .min(6)
-      .required()
-      .error((errors: any) => {
-        errors.forEach((err: Joi.ErrorReport) => {
-          switch (err.code) {
-            case "string.min":
-              err.message = `${err.path} should have at least ${err.local.limit} characters!`;
-              break;
-            case "string.empty":
-              err.message = `${err.path} required!`;
-              break;
-            default:
-              break;
-          }
-        });
-        return errors;
-      }),
-    username: Joi.string()
-      .min(5)
-      .required()
-      .error((errors: any) => {
-        errors.forEach((err: Joi.ErrorReport) => {
-          switch (err.code) {
-            case "string.min":
-              err.message = `${err.path} should have at least ${err.local.limit} characters!`;
-              break;
-            case "string.empty":
-              err.message = `${err.path} required!`;
-              break;
-            default:
-              break;
-          }
-        });
-        return errors;
-      }),
-  }).validate({ email, password, username });
+    password: Joi.string().min(6).required().messages({
+      "string.empty": "Password require",
+      "string.min": "Password must have at least 6 characters",
+    }),
+  }).validate({ username, email, password });
 };

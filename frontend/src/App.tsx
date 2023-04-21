@@ -1,69 +1,70 @@
-import { Box, Container } from "@mui/material";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { Home, Signup, Login, Chat, NotFound } from "./pages";
-import { Header, Toast } from "./components";
+import { Container } from "@mui/material";
+import { lazy, useEffect } from "react";
+import { useQueryClient } from "react-query";
+import { Routes, Route, Navigate } from "react-router-dom";
+import NotFound from "./pages/NotFound";
+import { Loadable, Loading } from "./components";
+const Home = Loadable(lazy(() => import("./pages/Home")));
+const Login = Loadable(lazy(() => import("./pages/Login")));
+const Signup = Loadable(lazy(() => import("./pages/Signup")));
+const Chat = Loadable(lazy(() => import("./pages/Chat")));
 
-import { useLayoutEffect, useEffect } from "react";
+import { socket } from "./services/socket";
+
 import { useUserContext } from "./contexts/user";
-import { loginWithToken } from "./services/user";
-
-const token = localStorage.getItem("token");
+import { MessageType, ChatType } from "./@types";
 
 function App() {
-  const navigate = useNavigate();
-  const { username, putUser, _id } = useUserContext();
-
-  useLayoutEffect(() => {
-    const a = async () => {
-      if (token) {
-        try {
-          const data = await loginWithToken(token);
-          putUser(data);
-        } catch (error: any) {
-          localStorage.removeItem("token");
-        }
-      }
-    };
-    a();
-  }, []);
+  const queryClient = useQueryClient();
+  const { _id, token } = useUserContext();
 
   useEffect(() => {
-    if (!username) {
-      navigate("/");
-    }
-  }, [username]);
+    socket.emit("setup", _id);
+    socket.on("new-chat", (data: ChatType) => {
+      queryClient.invalidateQueries("my-chats-list");
+    });
+    socket.on("message-received", (data: MessageType) => {
+      if (data.sender._id === _id) return;
+      queryClient.invalidateQueries(["messages", data.chat]);
+    });
+    socket.on("message-received-noti", (data: MessageType) => {
+      if (data.sender._id === _id) return;
+      queryClient.invalidateQueries("my-chats-list");
+    });
+    socket.on("group-created", (data: ChatType) => {
+      if (data.groupAdmin._id === _id) return;
+      queryClient.invalidateQueries("my-chats-list");
+    });
+  }, [_id]);
+
+  if (token && !_id) return <Loading />;
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Toast />
-      <Header />
+    <>
       <Container
         maxWidth="lg"
-        sx={{
-          height: "100%",
-          overflow: "hidden",
-        }}
+        disableGutters
+        sx={{ height: "100vh", overflow: "hidden" }}
       >
         <Routes>
+          <Route path="/" element={!_id ? <Home /> : <Navigate to="/chat" />} />
           <Route
-            path="/"
-            element={!!username ? <Navigate to="/chat" /> : <Home />}
+            path="/signup"
+            element={_id ? <Navigate to="/chat" /> : <Signup />}
           />
-          <Route path="/chat" element={username && <Chat />} />
-          <Route path="/chat/:chatId" element={username && <Chat />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={_id ? <Navigate to="/chat" /> : <Login />}
+          />
+          <Route path="/chat" element={!_id ? <Navigate to="/" /> : <Chat />} />
+          <Route
+            path="/chat/:chatId"
+            element={!_id ? <Navigate to="/" /> : <Chat />}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Container>
-    </Box>
+    </>
   );
 }
 

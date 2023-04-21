@@ -1,73 +1,46 @@
-import { Stack, CircularProgress, Divider } from "@mui/material";
-import { ChatRoomHeaderGroup } from "./ChatRoomHeaderGroup";
-import { ChatRoomHeader } from "./ChatRoomHeader";
-import { ChatRoomBody } from "./ChatRoomBody";
-import { ChatRoomAction } from "./ChatRoomAction";
+import { Stack } from "@mui/material";
+import { LoadingChatRoom } from "./LoadingChatRoom";
+import { ChatHeader } from "./Header/ChatHeader";
+import { GroupChatHeader } from "./Header/GroupChatHeader";
+import { Body } from "./Body";
+import { Actions } from "./Actions";
+import { ChatType } from "../../../@types";
 
-import { useQuery } from "react-query";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useQuery } from "react-query";
 import { useUserContext } from "../../../contexts/user";
 import { getChat } from "../../../services/chat";
+import { socket } from "../../../services/socket";
 
 export const ChatRoom = () => {
   const { chatId } = useParams();
-  const { token, _id: loggedUserId } = useUserContext();
+  const { token } = useUserContext();
 
-  const chatDataQuery = useQuery(
-    ["chat-data", chatId],
+  useEffect(() => {
+    if (!chatId) return;
+    socket.emit("join-chat", chatId);
+  }, [chatId]);
+
+  const { data, isLoading } = useQuery(
+    ["chatId", chatId],
     () => getChat({ token, chatId: chatId as string }),
     {
-      enabled: !!chatId && !!token,
-      select: (data) => {
-        return {
-          ...data,
-          chatingUser: data.users.filter(
-            (user: any) => user._id !== loggedUserId
-          )[0],
-        };
-      },
+      enabled: !!token && !!chatId,
     }
   );
 
   return (
-    <Stack
-      direction="column"
-      sx={{
-        height: "100%",
-        overflow: "hidden",
-        ml: { md: 2 },
-      }}
-    >
-      {chatDataQuery.isLoading ? (
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          sx={{ height: "100%" }}
-        >
-          <CircularProgress />
-        </Stack>
+    <Stack direction="column" sx={{ height: "100%", overflow: "hidden" }}>
+      {isLoading ? <LoadingChatRoom /> : null}
+      {!isLoading && data && data?.isGroupChat ? (
+        <GroupChatHeader chat={data as ChatType} />
       ) : null}
-
-      {!chatDataQuery.isLoading && chatDataQuery.data ? (
-        <>
-          {chatDataQuery.data.isGroupChat ? (
-            <ChatRoomHeaderGroup
-              name={chatDataQuery.data.chatName}
-              users={chatDataQuery.data.users}
-            />
-          ) : (
-            <ChatRoomHeader
-              name={chatDataQuery.data.chatingUser.username}
-              email={chatDataQuery.data.chatingUser.email}
-              avatar={chatDataQuery.data.chatingUser.avatar}
-              isActive={chatDataQuery.data.chatingUser.isActive || false}
-            />
-          )}
-          <Divider />
-          <ChatRoomBody chatId={chatId as string} />
-          <ChatRoomAction chatId={chatId as string} />
-        </>
+      {!isLoading && data && !data?.isGroupChat ? (
+        <ChatHeader chat={data as ChatType} />
       ) : null}
+      {!isLoading ? <Body /> : null}
+      {!isLoading ? <Actions /> : null}
     </Stack>
   );
 };

@@ -5,7 +5,7 @@ const User = require("../models/user");
 const registerValidator = [
   body("email")
     .notEmpty()
-    .withMessage("Email required")
+    .withMessage("Email require")
     .isEmail()
     .withMessage("Email must be valid email")
     .custom((value) => {
@@ -17,45 +17,49 @@ const registerValidator = [
     }),
   body("password")
     .notEmpty()
-    .withMessage("Password required")
+    .withMessage("Password require")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long"),
+    .withMessage("Password must have at least 6 characters"),
   body("username")
     .notEmpty()
-    .withMessage("Username required")
+    .withMessage("Username require")
     .isLength({ min: 5 })
-    .withMessage("Username must be at least 5 characters long"),
+    .withMessage("Username must have at least 5 characters"),
   routeErrorHandler,
 ];
 
 const loginValidator = [
   body("email")
     .notEmpty()
-    .withMessage("Email required")
+    .withMessage("Email require")
     .isEmail()
     .withMessage("Email must be valid email")
     .custom((value) => {
       return User.countDocuments({ email: value }).then((count) => {
-        if (count === 0) {
+        if (count == 0) {
           return Promise.reject("User not found");
         }
       });
     }),
   body("password")
     .notEmpty()
-    .withMessage("Password required")
+    .withMessage("Password require")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long"),
+    .withMessage("Password must have at least 6 characters"),
   routeErrorHandler,
 ];
 
 const changeUsernameValidator = [
   body("username")
     .notEmpty()
-    .withMessage("Username required")
+    .withMessage("Username require")
     .isLength({ min: 5 })
-    .withMessage("Username must be at least 5 characters long"),
+    .withMessage("Username must have at least 5 characters"),
   routeErrorHandler,
 ];
 
-module.exports = { registerValidator, loginValidator, changeUsernameValidator };
+module.exports = {
+  registerValidator,
+  loginValidator,
+  changeUsernameValidator,
+};

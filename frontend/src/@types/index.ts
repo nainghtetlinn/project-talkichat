@@ -1,9 +1,11 @@
-interface UserType {
+export interface UserType {
   _id: string;
   username: string;
   avatar: string;
   email: string;
   isActive: boolean;
+  updatedAt?: any;
+  createdAt?: any;
 }
 
 export interface ChatType {
@@ -11,8 +13,10 @@ export interface ChatType {
   chatName: string;
   isGroupChat: boolean;
   users: UserType[];
-  unreadMessages: MessageType;
+  latestMessage: MessageType;
   groupAdmin: UserType;
+  updatedAt?: any;
+  createdAt?: any;
 }
 
 export interface MessageType {
@@ -20,4 +24,6 @@ export interface MessageType {
   sender: UserType;
   content: string;
   chat: ChatType;
+  updatedAt?: any;
+  createdAt?: any;
 }
