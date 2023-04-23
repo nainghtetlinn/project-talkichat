@@ -37,12 +37,29 @@ connectDB(() => {
   });
 
   const io = require("./socket").init(server);
+  const User = require("./models/user");
+
+  // create a map to store user IDs for each socket
+  const socketUserMap = new Map();
 
   io.on("connection", (socket) => {
     console.log(`Connected id: ${socket.id}`.green.italic);
-    socket.on("setup", (id) => {
+    socket.on("setup", async (id) => {
       socket.join(id);
       console.log(`${socket.id} join to room ${id}`);
+
+      // store user ID in socketUserMap
+      socketUserMap.set(socket.id, id);
+
+      try {
+        await User.findOneAndUpdate(
+          { _id: id },
+          { isActive: true },
+          { new: true }
+        );
+      } catch (error) {
+        console.error(error);
+      }
     });
     socket.on("join-chat", (chatId) => {
       socket.join(chatId);
@@ -56,8 +73,22 @@ connectDB(() => {
     socket.on("stop-typing", (chatId, userId) => {
       socket.in(chatId).emit("stopped-typing", userId);
     });
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       console.log(`Disconnected id: ${socket.id}`.red.italic);
+      // get user ID from socketUserMap
+      const userId = socketUserMap.get(socket.id);
+      // remove socket ID and user ID from socketUserMap
+      socketUserMap.delete(socket.id);
+
+      try {
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { isActive: false },
+          { new: true }
+        );
+      } catch (error) {
+        console.error(error);
+      }
     });
   });
 });
