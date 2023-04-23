@@ -37,23 +37,34 @@ export const Actions = () => {
     if (!message || !socket) return;
     mutate({ token, content: message, chatId: chatId as string });
     setTyping(false);
-    socket.emit("stop-typing", chatId);
   }
 
   function handleChange(
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) {
     setMessage(e.target.value);
-    if (typing || !socket) return;
-    setTyping(true);
-    socket.emit("start-typing", chatId, { avatar, _id });
+    if (e.target.value === "") {
+      setTyping(false);
+    }
+
+    if (!typing) {
+      setTyping(true);
+    }
   }
 
   useEffect(() => {
     if (!typing || !socket) return;
     setTyping(false);
-    socket.emit("stop-typing", chatId, _id);
   }, [debouncedMessage]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (typing) {
+      socket.emit("start-typing", chatId, { avatar, _id });
+    } else {
+      socket.emit("stop-typing", chatId, _id);
+    }
+  }, [typing]);
 
   return (
     <Toolbar>

@@ -18,7 +18,6 @@ export const Body = () => {
   const { socket } = useSocketContext();
 
   const chatBodyEl = useRef<HTMLDivElement | any>(null);
-  const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<
     { avatar: string; _id: string }[]
   >([]);
@@ -49,14 +48,6 @@ export const Body = () => {
   }, [socket, loggedUserId]);
 
   useEffect(() => {
-    if (typingUsers.length === 0) {
-      setIsTyping(false);
-    } else {
-      setIsTyping(true);
-    }
-  }, [typingUsers]);
-
-  useEffect(() => {
     chatBodyEl.current?.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
@@ -78,7 +69,7 @@ export const Body = () => {
             </Box>
           );
         })}
-        {isTyping ? <TypingIndicator users={typingUsers} /> : null}
+        <TypingIndicator users={typingUsers} />
       </Stack>
     </div>
   );
