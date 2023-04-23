@@ -46,12 +46,13 @@ const register = asyncHandler(async (req, res) => {
 
   // get super user id
   const sui = process.env.SUPER_USER_ID;
+  const super_user = await User.findById(sui);
   const suiMessage = process.env.SUI_MESSAGE;
-  if (sui && suiMessage) {
+  if (!!super_user && !!suiMessage) {
     // auto access with super user acc
     let chatData = {
       isGroupChat: false,
-      users: [user._id, sui],
+      users: [user._id, super_user._id],
     };
     const chat = await Chat.create(chatData);
 
@@ -59,7 +60,7 @@ const register = asyncHandler(async (req, res) => {
     const message = await Message.create({
       content: suiMessage,
       chat: chat._id,
-      sender: sui,
+      sender: super_user._id,
     });
 
     // change latest message
