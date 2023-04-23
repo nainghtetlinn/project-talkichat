@@ -44,24 +44,29 @@ const register = asyncHandler(async (req, res) => {
     avatar: url || null,
   });
 
-  // auto access with my acc
-  let chatData = {
-    isGroupChat: false,
-    users: [user._id, "643e42e71dc97120cbb8df19"],
-  };
-  const chat = await Chat.create(chatData);
+  // get super user id
+  const sui = process.env.SUPER_USER_ID;
+  const suiMessage = process.env.SUI_MESSAGE;
+  if (sui && suiMessage) {
+    // auto access with super user acc
+    let chatData = {
+      isGroupChat: false,
+      users: [user._id, sui],
+    };
+    const chat = await Chat.create(chatData);
 
-  // auto message to newly created user with my acc
-  const message = await Message.create({
-    content: "Hello",
-    chat: chat._id,
-    sender: "643e42e71dc97120cbb8df19",
-  });
+    // auto message to newly created user with my acc
+    const message = await Message.create({
+      content: suiMessage,
+      chat: chat._id,
+      sender: sui,
+    });
 
-  // change latest message
-  await Chat.findByIdAndUpdate(chat._id, {
-    latestMessage: message._id,
-  });
+    // change latest message
+    await Chat.findByIdAndUpdate(chat._id, {
+      latestMessage: message._id,
+    });
+  }
 
   res.status(201).json({
     _id: user._id,

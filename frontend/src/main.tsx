@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { SnackbarProvider } from "notistack";
 
 import { UserContextProvider } from "./contexts/user";
+import { SocketContextProvider } from "./contexts/socket";
 
 const client = new QueryClient();
 
@@ -17,12 +18,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <CssBaseline />
     <QueryClientProvider client={client}>
       <UserContextProvider>
-        <SnackbarProvider
-          maxSnack={1}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        >
-          <App />
-        </SnackbarProvider>
+        <SocketContextProvider>
+          <SnackbarProvider
+            maxSnack={1}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          >
+            <App />
+          </SnackbarProvider>
+        </SocketContextProvider>
       </UserContextProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>

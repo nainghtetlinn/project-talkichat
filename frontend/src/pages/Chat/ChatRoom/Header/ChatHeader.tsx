@@ -13,13 +13,11 @@ import { ChatType } from "../../../../@types";
 
 import moment from "moment";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../../../contexts/user";
 
-type Props = { chat: ChatType };
+type Props = { chat: ChatType; handleBack: () => void };
 
-export const ChatHeader = ({ chat }: Props) => {
-  const navigate = useNavigate();
+export const ChatHeader = ({ chat, handleBack }: Props) => {
   const { _id } = useUserContext();
   const { users } = chat;
 
@@ -34,7 +32,7 @@ export const ChatHeader = ({ chat }: Props) => {
       <Profile open={show} onClose={() => setShow(false)} user={user} />
       <Toolbar>
         <Stack direction="row" alignItems="center" spacing={2}>
-          <IconButton onClick={() => navigate("/chat")}>
+          <IconButton onClick={handleBack}>
             <ArrowBackIcon />
           </IconButton>
           <ActiveBadge isActive={user.isActive}>

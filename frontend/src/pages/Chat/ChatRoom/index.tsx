@@ -7,20 +7,22 @@ import { Actions } from "./Actions";
 import { ChatType } from "../../../@types";
 
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useUserContext } from "../../../contexts/user";
+import { useSocketContext } from "../../../contexts/socket";
 import { getChat } from "../../../services/chat";
-import { socket } from "../../../services/socket";
 
 export const ChatRoom = () => {
   const { chatId } = useParams();
+  const navigate = useNavigate();
   const { token } = useUserContext();
+  const { socket } = useSocketContext();
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !socket) return;
     socket.emit("join-chat", chatId);
-  }, [chatId]);
+  }, [chatId, socket]);
 
   const { data, isLoading } = useQuery(
     ["chatId", chatId],
@@ -30,14 +32,20 @@ export const ChatRoom = () => {
     }
   );
 
+  function handleBack() {
+    if (!socket || !chatId) return;
+    navigate("/chat");
+    socket.emit("leave-chat", chatId);
+  }
+
   return (
     <Stack direction="column" sx={{ height: "100%", overflow: "hidden" }}>
       {isLoading ? <LoadingChatRoom /> : null}
       {!isLoading && data && data?.isGroupChat ? (
-        <GroupChatHeader chat={data as ChatType} />
+        <GroupChatHeader chat={data as ChatType} handleBack={handleBack} />
       ) : null}
       {!isLoading && data && !data?.isGroupChat ? (
-        <ChatHeader chat={data as ChatType} />
+        <ChatHeader chat={data as ChatType} handleBack={handleBack} />
       ) : null}
       {!isLoading ? <Body /> : null}
       {!isLoading ? <Actions /> : null}

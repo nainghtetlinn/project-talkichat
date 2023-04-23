@@ -19,11 +19,13 @@ import { Profile } from "./Profile";
 import { CreateGroupChat } from "./CreateGroupChat";
 import { useState } from "react";
 import { useUserContext } from "../../../../contexts/user";
+import { useSocketContext } from "../../../../contexts/socket";
 
 type Props = { open: boolean; onClose: () => void };
 
 export const SideDrawer = ({ open, onClose }: Props) => {
   const { removeUser, username, email, avatar } = useUserContext();
+  const { disconnectSocket } = useSocketContext();
 
   const [showProfile, setShowProfile] = useState(false);
   const [createGroup, setCreateGroup] = useState(false);
@@ -31,6 +33,7 @@ export const SideDrawer = ({ open, onClose }: Props) => {
   function handleLogout() {
     removeUser();
     localStorage.removeItem("token");
+    disconnectSocket();
   }
 
   return (

@@ -39,15 +39,25 @@ connectDB(() => {
   const io = require("./socket").init(server);
 
   io.on("connection", (socket) => {
-    console.log(`Connected to socket`);
+    console.log(`Connected id: ${socket.id}`.green.italic);
     socket.on("setup", (id) => {
       socket.join(id);
+      console.log(`${socket.id} join to room ${id}`);
     });
     socket.on("join-chat", (chatId) => {
       socket.join(chatId);
     });
+    socket.on("leave-chat", (chatId) => {
+      socket.leave(chatId);
+    });
+    socket.on("start-typing", (chatId, user) => {
+      socket.in(chatId).emit("started-typing", user);
+    });
+    socket.on("stop-typing", (chatId, userId) => {
+      socket.in(chatId).emit("stopped-typing", userId);
+    });
     socket.on("disconnect", () => {
-      console.log("Disconnected");
+      console.log(`Disconnected id: ${socket.id}`.red.italic);
     });
   });
 });

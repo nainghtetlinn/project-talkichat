@@ -12,13 +12,11 @@ import { ChatType } from "../../../../@types";
 import { GroupProfile } from "./GroupProfile";
 
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { shuffle } from "./utils";
 
-type Props = { chat: ChatType };
+type Props = { chat: ChatType; handleBack: () => void };
 
-export const GroupChatHeader = ({ chat }: Props) => {
-  const navigate = useNavigate();
+export const GroupChatHeader = ({ chat, handleBack }: Props) => {
   const { chatName, users } = chat;
   const [show, setShow] = useState(false);
 
@@ -40,7 +38,7 @@ export const GroupChatHeader = ({ chat }: Props) => {
       />
       <Toolbar>
         <Stack direction="row" alignItems="center" spacing={2}>
-          <IconButton onClick={() => navigate("/chat")}>
+          <IconButton onClick={handleBack}>
             <ArrowBackIcon />
           </IconButton>
 

@@ -130,7 +130,7 @@ const Login = () => {
             }
             sx={{ textTransform: "capitalize" }}
           >
-            Signup
+            Login
           </Button>
         </DialogActions>
       </Paper>
