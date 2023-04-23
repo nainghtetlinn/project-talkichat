@@ -1,9 +1,7 @@
 import axios from "axios";
 import { LoggedUserType } from "../@types/user";
 
-const baseUrl = import.meta.env.PROD
-  ? import.meta.env.VITE_PRODUCTION_SERVER
-  : import.meta.env.VITE_DEVELOPMENT_SERVER;
+const baseUrl = import.meta.env.VITE_BACKEND_SERVER;
 
 const User = axios.create({
   baseURL: baseUrl + "/api/user",

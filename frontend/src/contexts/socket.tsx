@@ -1,9 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-const ENDPOINT = import.meta.env.PROD
-  ? import.meta.env.VITE_PRODUCTION_SERVER
-  : import.meta.env.VITE_DEVELOPMENT_SERVER;
+const ENDPOINT = import.meta.env.VITE_BACKEND_SERVER;
 
 const socketContext = createContext<{
   socket: Socket | null;

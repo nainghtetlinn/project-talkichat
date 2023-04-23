@@ -1,9 +1,7 @@
 import axios from "axios";
 import { MessageType } from "../@types";
 
-const baseUrl = import.meta.env.PROD
-  ? import.meta.env.VITE_PRODUCTION_SERVER
-  : import.meta.env.VITE_DEVELOPMENT_SERVER;
+const baseUrl = import.meta.env.VITE_BACKEND_SERVER;
 
 const message = axios.create({
   baseURL: baseUrl + "/api/message",
