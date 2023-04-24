@@ -128,7 +128,6 @@ const searchUser = asyncHandler(async (req, res) => {
 /* /api/user/update PUT {avatar, username} */
 const updateUser = asyncHandler(async (req, res) => {
   const { username } = req.body;
-  req.user.username = username;
   const oldUrl = req.user.avatar;
   let url;
   const avatar = req.file;
@@ -150,12 +149,15 @@ const updateUser = asyncHandler(async (req, res) => {
       contentType: avatar.mimetype,
     });
     url = await getDownloadURL(snapshot.ref);
-    req.user.avatar = url;
 
-    // deleting old avatar from oldUrl
-    const storageRef = ref(storage, oldUrl);
-    await deleteObject(storageRef);
+    if (oldUrl) {
+      // deleting old avatar from oldUrl
+      const storageRef = ref(storage, oldUrl);
+      await deleteObject(storageRef);
+    }
   }
+  req.user.username = username;
+  req.user.avatar = url || oldUrl;
   const user = await req.user.save();
 
   res.status(200).json({
