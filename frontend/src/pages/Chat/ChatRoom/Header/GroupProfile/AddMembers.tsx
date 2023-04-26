@@ -1,37 +1,39 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
-  Stack,
-  Typography,
-  IconButton,
-  TextField,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Button,
+  IconButton,
+  TextField,
+  Stack,
+  Typography,
   CircularProgress,
 } from "@mui/material";
-import { UsersList } from "./UsersList";
+import { UserType } from "../../../../../@types";
+import { AxiosError } from "axios";
 import { SelectedUsersList } from "./SelectedUsersList";
+import { UsersList } from "./UsersList";
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useParams } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
-import { useUserContext } from "../../../../contexts/user";
-import { searchUser } from "../../../../services/user";
-import { createGroupChat } from "../../../../services/chat";
-import { ChatType, UserType } from "../../../../@types";
-import { AxiosError } from "axios";
+import { useUserContext } from "../../../../../contexts/user";
+import { searchUser } from "../../../../../services/user";
+import { addMember } from "../../../../../services/chat";
 
 type Props = { open: boolean; onClose: () => void };
 
-export const CreateGroupChat = ({ open, onClose }: Props) => {
+export const AddMembers = ({ open, onClose }: Props) => {
   const queryClient = useQueryClient();
+  const { chatId } = useParams();
   const { token } = useUserContext();
 
   const [isNew, setIsNew] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [makeSearch, setMakeSearch] = useState(false);
-  const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
 
   const { data, isLoading } = useQuery(
@@ -65,13 +67,11 @@ export const CreateGroupChat = ({ open, onClose }: Props) => {
     });
   }
 
-  const { mutate, isLoading: loading } = useMutation(createGroupChat, {
+  const { mutate, isLoading: loading } = useMutation(addMember, {
     onSuccess: (data) => {
       setKeyword("");
-      setGroupName("");
       setSelectedUsers([]);
-      enqueueSnackbar("Group chat created", { variant: "success" });
-      queryClient.invalidateQueries("my-chats-list");
+      queryClient.invalidateQueries(["chatId", chatId]);
       onClose();
     },
     onError: (err: AxiosError) => {
@@ -81,33 +81,19 @@ export const CreateGroupChat = ({ open, onClose }: Props) => {
     },
   });
 
-  function handleCreate() {
-    if (!groupName || selectedUsers.length === 0) {
-      enqueueSnackbar("Cannot create group chat", { variant: "error" });
+  const handleAdd = () => {
+    if (selectedUsers.length === 0 || !chatId) {
+      enqueueSnackbar("Cannot add member to group chat", { variant: "error" });
       return;
     }
     const ids: string[] = [];
     selectedUsers.forEach((user) => ids.push(user._id));
-    mutate({
-      groupName,
-      users: ids,
-      token,
-    });
-  }
+    mutate({ groupId: chatId, users: ids, token });
+  };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>
-        <TextField
-          fullWidth
-          margin="dense"
-          type="text"
-          label="group name"
-          value={groupName}
-          onChange={(e) => {
-            setGroupName(e.target.value);
-          }}
-        />
         <Stack direction="row" alignItems="center">
           <TextField
             fullWidth
@@ -159,15 +145,14 @@ export const CreateGroupChat = ({ open, onClose }: Props) => {
           Cancel
         </Button>
         <Button
-          disabled={loading}
           variant="contained"
           sx={{ textTransform: "capitalize" }}
           endIcon={
             loading ? <CircularProgress size={20} color="inherit" /> : null
           }
-          onClick={handleCreate}
+          onClick={handleAdd}
         >
-          Create
+          Add
         </Button>
       </DialogActions>
     </Dialog>

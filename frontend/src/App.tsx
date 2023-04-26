@@ -23,7 +23,7 @@ function App() {
       initSocket();
     }
     if (!_id || !socket) return;
-    console.log("Socket active");
+
     socket.on("connect", () => {
       socket.emit("setup", _id);
     });
@@ -33,12 +33,10 @@ function App() {
     socket.on("message-received", (data: MessageType) => {
       if (data.sender._id === _id) return;
       queryClient.invalidateQueries(["messages", data.chat]);
-      console.log("message-received");
     });
     socket.on("message-received-noti", (data: MessageType) => {
       if (data.sender._id === _id) return;
       queryClient.invalidateQueries("my-chats-list");
-      console.log("message-received-noti");
     });
     socket.on("group-created", (data: ChatType) => {
       if (data.groupAdmin._id === _id) return;

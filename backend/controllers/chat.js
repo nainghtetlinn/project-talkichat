@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Chat = require("../models/chat");
+const Message = require("../models/message");
 
 /* /api/chat POST {userId} */
 const accessChat = asyncHandler(async (req, res) => {
@@ -155,11 +156,12 @@ const removeMember = asyncHandler(async (req, res) => {
   const groupChat = await Chat.findOneAndUpdate(
     {
       _id: groupId,
+      isGroupChat: true,
       groupAdmin: user._id,
-      users: { $in: users },
+      users: { $all: users },
     },
-    { $pull: { users: { $each: users } } },
-    { new: true }
+    { $pullAll: { users: users } },
+    { new: true, multi: true }
   )
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
@@ -173,6 +175,11 @@ const removeMember = asyncHandler(async (req, res) => {
     throw new Error("Failed to remove user from group");
   }
   res.status(200).json(groupChat);
+
+  if (groupChat.users.length === 1) {
+    await Chat.deleteOne({ _id: groupChat._id });
+    await Message.deleteMany({ chat: groupChat._id });
+  }
 });
 
 module.exports = {

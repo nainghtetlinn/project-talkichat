@@ -43,10 +43,10 @@ connectDB(() => {
   const socketUserMap = new Map();
 
   io.on("connection", (socket) => {
-    console.log(`Connected id: ${socket.id}`.green.italic);
+    // console.log(`Connected id: ${socket.id}`.green.italic);
     socket.on("setup", async (id) => {
       socket.join(id);
-      console.log(`${socket.id} join to room ${id}`);
+      // console.log(`${socket.id} join to room ${id}`);
 
       // store user ID in socketUserMap
       socketUserMap.set(socket.id, id);
@@ -74,7 +74,7 @@ connectDB(() => {
       socket.in(chatId).emit("stopped-typing", userId);
     });
     socket.on("disconnect", async () => {
-      console.log(`Disconnected id: ${socket.id}`.red.italic);
+      // console.log(`Disconnected id: ${socket.id}`.red.italic);
       // get user ID from socketUserMap
       const userId = socketUserMap.get(socket.id);
       // remove socket ID and user ID from socketUserMap

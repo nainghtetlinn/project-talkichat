@@ -15,7 +15,6 @@ const SocketContextProvider = ({ children }: { children: JSX.Element }) => {
   function initSocket() {
     if (!socket) {
       setSocket(io(ENDPOINT));
-      console.log("Init Socket");
     }
   }
 
@@ -23,7 +22,6 @@ const SocketContextProvider = ({ children }: { children: JSX.Element }) => {
     if (socket) {
       socket.disconnect();
       setSocket(null);
-      console.log("Disconnect Socket");
     }
   }
 

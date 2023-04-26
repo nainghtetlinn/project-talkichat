@@ -5,10 +5,12 @@ import { GroupChatHeader } from "./Header/GroupChatHeader";
 import { Body } from "./Body";
 import { Actions } from "./Actions";
 import { ChatType } from "../../../@types";
+import { AxiosError } from "axios";
 
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
+import { enqueueSnackbar } from "notistack";
 import { useUserContext } from "../../../contexts/user";
 import { useSocketContext } from "../../../contexts/socket";
 import { getChat } from "../../../services/chat";
@@ -29,6 +31,12 @@ export const ChatRoom = () => {
     () => getChat({ token, chatId: chatId as string }),
     {
       enabled: !!token && !!chatId,
+      onError: (err: AxiosError) => {
+        const res = err.response?.data as any;
+        const msg = res.message || "Something went wrong";
+        enqueueSnackbar(msg, { variant: "error" });
+        navigate("/chat");
+      },
     }
   );
 

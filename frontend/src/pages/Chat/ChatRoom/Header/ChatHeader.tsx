@@ -53,7 +53,9 @@ export const ChatHeader = ({ chat, handleBack }: Props) => {
               </Typography>
             </span>
             <Typography variant="body2">
-              {user.isActive ? "online" : moment(user?.updatedAt).fromNow()}
+              {user.isActive
+                ? "online"
+                : "online " + moment(user?.updatedAt).fromNow()}
             </Typography>
           </Stack>
         </Stack>
