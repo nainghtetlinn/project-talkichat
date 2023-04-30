@@ -15,7 +15,7 @@ export const ChatsList = () => {
     fetchChats(token)
   );
   return (
-    <List>
+    <List sx={{ height: "100%", overflow: "auto" }}>
       {!isLoading &&
         data?.map((chat) => {
           const isGroupChat = chat.isGroupChat;

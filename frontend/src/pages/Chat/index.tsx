@@ -13,7 +13,14 @@ const Chat = () => {
           item
           xs={12}
           md={4}
-          sx={{ display: { xs: chatId ? "none" : "block", md: "block" } }}
+          sx={{
+            display: {
+              xs: chatId ? "none" : "block",
+              md: "block",
+            },
+            height: "100%",
+            overflow: "hidden",
+          }}
         >
           <Sidebar />
         </Grid>

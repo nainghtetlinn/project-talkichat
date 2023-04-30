@@ -1,13 +1,6 @@
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
-import {
-  Box,
-  Stack,
-  Toolbar,
-  Typography,
-  IconButton,
-  Divider,
-} from "@mui/material";
+import { Stack, Toolbar, Typography, IconButton, Divider } from "@mui/material";
 import { SideDrawer } from "./SideDrawer";
 import { Search } from "./Search";
 import { ChatsList } from "./ChatsList";
@@ -21,7 +14,7 @@ export const Sidebar = () => {
     <>
       <SideDrawer open={showDrawer} onClose={() => setShowDrawer(false)} />
       <Search open={showSearch} onClose={() => setShowSearch(false)} />
-      <Box sx={{ height: "100%", overflow: "hidden" }}>
+      <Stack direction="column" sx={{ height: "100%", overflow: "hidden" }}>
         <Toolbar disableGutters>
           <Stack
             direction="row"
@@ -42,7 +35,7 @@ export const Sidebar = () => {
         </Toolbar>
         <Divider />
         <ChatsList />
-      </Box>
+      </Stack>
     </>
   );
 };
